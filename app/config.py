@@ -9,7 +9,11 @@ from typing import Any, Dict, Optional
 
 
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "hotkeys": {"toggle": "f2"},
+    "hotkeys": {
+        "toggle": "f2",
+        "system_sound": "f3",
+        "file_input": "f4",
+    },
     "audio": {
         "sample_rate": 16000,
         "block_ms": 20,
@@ -17,6 +21,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         # 单次录音的最大大小（字节），默认20MB
         # 达到此限制后将自动停止录音并开始转录
         "max_session_bytes": 20 * 1024 * 1024,
+        # 分段间隔（秒）：录音过程中每隔 N 秒自动提交一段进行转录
+        "segment_seconds": 5,
+        # 手动指定 loopback 设备索引（用于系统声音识别），None 为自动检测
+        "loopback_device": None,
     },
     "vad": {
         "start_threshold": 0.02,
@@ -28,9 +36,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # 识别后端：funasr（本地离线）或 volcengine（火山引擎云端流式）
     "backend": "funasr",
     "asr": {
+        "engine": "sensevoice",  # "paraformer"（中文专用）或 "sensevoice"（多语言）
         "use_vad": False,
         "use_punc": True,
-        "language": "zh",
+        "language": "auto",  # SenseVoice: auto/zh/en/yue/ja/ko; Paraformer: zh
         "hotword": "",
         "batch_size_s": 60.0,
     },
@@ -59,6 +68,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "min_chars": 1,
         "method": "auto",
         "append_newline": False,
+        # 转录结果自动保存路径（追加写入）
+        "log_file": "logs/transcription.txt",
     },
     "logging": {"dir": "logs", "level": "INFO"},
 }

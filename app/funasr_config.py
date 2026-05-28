@@ -35,6 +35,15 @@ MODELS = {
     },
 }
 
+# SenseVoice 多语言模型（支持中英日粤韩，自动检测语言）
+SENSEVOICE_MODEL = os.environ.get(
+    "FUNASR_SENSEVOICE_MODEL",
+    "iic/SenseVoiceSmall",
+)
+
+# SenseVoice 支持的语言列表
+SENSEVOICE_LANGUAGES = {"auto", "zh", "en", "yue", "ja", "ko"}
+
 # 获取模型列表（用于下载脚本）
 def get_models_for_download():
     """返回用于下载的模型配置列表"""

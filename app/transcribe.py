@@ -67,7 +67,9 @@ class TranscriptionWorker:
         else:
             from app.funasr_server import FunASRServer
             self._volcengine_client = None
-            self.fun_server = FunASRServer()
+            asr_cfg = self.config.get("asr", {})
+            engine = asr_cfg.get("engine", "sensevoice")
+            self.fun_server = FunASRServer(engine=engine)
             init_result = self.fun_server.initialize()
             if not init_result.get("success"):
                 raise RuntimeError(f"FunASR 初始化失败: {init_result}")
@@ -91,7 +93,12 @@ class TranscriptionWorker:
             self._max_session_bytes = 20 * 1024 * 1024
             logger.warning("max_session_bytes 配置非法，已回退至 20MB")
         self._session_bytes: int = 0
-        
+
+        # 分段配置
+        self._segment_seconds: int = int(audio_cfg.get("segment_seconds", 5))
+        self._segment_timer: Optional[threading.Timer] = None
+        self._original_device = audio_cfg.get("device")  # 保存原始设备，供 start_with_device 恢复
+
         # 异步转录队列和工作线程
         self._transcription_queue: "queue.Queue[Optional[np.ndarray]]" = queue.Queue(maxsize=10)
         self._transcription_thread: Optional[threading.Thread] = None
@@ -113,25 +120,32 @@ class TranscriptionWorker:
         """清理所有资源，包括缓冲区、音频设备和 ASR 后端。"""
         logger.debug("开始清理 TranscriptionWorker 资源")
         try:
-            # 停止录音
-            if self._running.is_set():
+            # 停止录音（_running 可能在 __init__ 失败时未创建）
+            if hasattr(self, '_running') and self._running.is_set():
                 self.stop()
-            
+
+            # 取消分段定时器
+            if hasattr(self, '_segment_timer') and self._segment_timer is not None:
+                self._segment_timer.cancel()
+                self._segment_timer = None
+
             # 停止转录工作线程
-            self._stop_transcription_worker()
-            
+            if hasattr(self, '_transcription_running'):
+                self._stop_transcription_worker()
+
             # 清理缓冲区
-            with self._buffer_lock:
-                self._buffer.clear()
-            
+            if hasattr(self, '_buffer_lock'):
+                with self._buffer_lock:
+                    self._buffer.clear()
+
             # 停止音频捕获
             if hasattr(self, 'audio'):
                 self.audio.stop()
 
             # 清理 ASR 后端资源
-            if self.fun_server is not None:
+            if hasattr(self, 'fun_server') and self.fun_server is not None:
                 self.fun_server.cleanup()
-            elif self._volcengine_client is not None:
+            elif hasattr(self, '_volcengine_client') and self._volcengine_client is not None:
                 self._volcengine_client.cleanup()
 
             logger.debug("TranscriptionWorker 资源清理完成")
@@ -245,12 +259,75 @@ class TranscriptionWorker:
             self._capture_thread.start()
             self._current_session_id = session_id
 
+            # 启动分段定时器
+            self._start_segment_timer()
+
+    def start_with_device(self, device) -> None:
+        """用指定设备开始录音（F3 系统声音用）。临时切换设备后调用 start()。"""
+        self.audio.device = device
+        self.start()
+
+    def _start_segment_timer(self) -> None:
+        """启动分段定时器，每隔 segment_seconds 自动提交当前缓冲区。"""
+        if self._segment_seconds <= 0:
+            return
+        self._segment_timer = threading.Timer(self._segment_seconds, self._segment_timer_callback)
+        self._segment_timer.daemon = True
+        self._segment_timer.start()
+
+    def _segment_timer_callback(self) -> None:
+        """分段定时器回调：提交当前缓冲区并重启定时器。"""
+        if not self._running.is_set():
+            return
+        self._submit_current_buffer()
+        # 重启定时器
+        self._start_segment_timer()
+
+    def _submit_current_buffer(self) -> None:
+        """取出当前缓冲区并提交到转录队列（不改变录音状态）。"""
+        with self._buffer_lock:
+            if not self._buffer:
+                return
+            try:
+                combined = np.concatenate(self._buffer, axis=0)
+                self._buffer.clear()
+                self._session_bytes = 0
+            except Exception as exc:
+                logger.error("分段合并音频缓冲区时出错: %s", exc)
+                self._buffer.clear()
+                return
+
+        if combined.size == 0:
+            return
+
+        try:
+            self._transcription_queue.put_nowait(combined)
+            with self._state_lock:
+                self._transcription_task_count += 1
+                task_count = self._transcription_task_count
+            logger.info(
+                "分段自动提交转录（任务 #%s），队列中有 %s 个待处理任务",
+                task_count,
+                self._transcription_queue.qsize(),
+            )
+        except queue.Full:
+            logger.warning("转录队列已满，分段提交跳过")
+
     def stop(self, _from_capture_thread: bool = False) -> None:
         """停止录音并提交转录任务
-        
+
         Args:
             _from_capture_thread: 内部参数，标识是否从capture线程调用（避免死锁）
         """
+        # 取消分段定时器
+        if self._segment_timer is not None:
+            self._segment_timer.cancel()
+            self._segment_timer = None
+
+        # 恢复原始设备（start_with_device 可能切换了设备）
+        if self.audio.device != self._original_device:
+            self.audio.device = self._original_device
+
         # 第一阶段：在锁内快速更新状态并保存资源引用
         with self._state_lock:
             if not self._running.is_set():
@@ -412,6 +489,7 @@ class TranscriptionWorker:
                 tmp_path,
                 options=self.config.get("asr"),
             )
+
         finally:
             inference_latency = time.time() - start
             try:
@@ -443,6 +521,48 @@ class TranscriptionWorker:
         inference_latency = time.time() - start
 
         self._dispatch_result(asr_result, asr_result.get("inference_latency", inference_latency))
+
+    def transcribe_file(self, file_path: str) -> None:
+        """加载音频文件，分片提交到转录队列（F4 文件识别用）。"""
+        import os
+        if not os.path.isfile(file_path):
+            logger.error("音频文件不存在: %s", file_path)
+            return
+
+        sample_rate = self._audio_cfg["sample_rate"]
+        segment_samples = self._segment_seconds * sample_rate
+
+        try:
+            import librosa
+            samples, _ = librosa.load(file_path, sr=sample_rate, mono=True)
+        except Exception as exc:
+            logger.error("加载音频文件失败: %s — %s", file_path, exc)
+            return
+
+        # float32 → int16
+        samples_int16 = (np.clip(samples, -1.0, 1.0) * 32767).astype(np.int16)
+        total_samples = len(samples_int16)
+        logger.info("音频文件加载完成: %s（%d 样本，%.1f 秒）", file_path, total_samples, total_samples / sample_rate)
+
+        # 分片提交（阻塞等待队列有空位，避免丢弃分片）
+        offset = 0
+        chunk_index = 0
+        while offset < total_samples:
+            end = min(offset + segment_samples, total_samples)
+            chunk = samples_int16[offset:end]
+            chunk_index += 1
+            try:
+                self._transcription_queue.put(chunk, timeout=300)
+                with self._state_lock:
+                    self._transcription_task_count += 1
+                if chunk_index % 50 == 0 or end >= total_samples:
+                    logger.info("文件分片进度: %d/%d（样本 %d~%d），队列中有 %s 个待处理任务",
+                                chunk_index, (total_samples + segment_samples - 1) // segment_samples,
+                                offset, end, self._transcription_queue.qsize())
+            except queue.Full:
+                logger.error("转录队列超时（300秒），文件分片提交失败（样本 %d~%d）", offset, end)
+                break
+            offset = end
 
     def _dispatch_result(self, asr_result: dict, inference_latency: float) -> None:
         """将 ASR 结果包装成 TranscriptionResult 并回调。"""

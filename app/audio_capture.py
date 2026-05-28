@@ -14,6 +14,49 @@ import sounddevice as sd
 logger = logging.getLogger(__name__)
 
 
+def list_devices() -> list[dict]:
+    """列出所有音频设备。"""
+    devices = []
+    try:
+        raw = sd.query_devices()
+        for idx, info in enumerate(raw):
+            devices.append({
+                "index": idx,
+                "name": info.get("name", "unknown"),
+                "input_channels": info.get("max_input_channels", 0),
+                "output_channels": info.get("max_output_channels", 0),
+            })
+    except Exception as exc:
+        logger.error("枚举音频设备失败: %s", exc)
+    return devices
+
+
+def find_loopback_device() -> Optional[int]:
+    """自动查找 WASAPI loopback 设备（系统声音采集）。
+
+    查找策略：
+    1. 名称含 "loopback"（WASAPI loopback 设备）
+    2. 名称含 "立体声混音" / "Stereo Mix" / "What U Hear"
+    找不到返回 None。
+    """
+    keywords = ["loopback", "立体声混音", "stereo mix", "what u hear"]
+    try:
+        devices = sd.query_devices()
+        for idx, info in enumerate(devices):
+            if info.get("max_input_channels", 0) <= 0:
+                continue
+            name_lower = info.get("name", "").lower()
+            for kw in keywords:
+                if kw in name_lower:
+                    logger.info("找到 loopback 设备: #%s (%s)", idx, info.get("name"))
+                    return idx
+    except Exception as exc:
+        logger.error("查找 loopback 设备失败: %s", exc)
+
+    logger.warning("未找到 loopback 设备，F3 系统声音识别不可用")
+    return None
+
+
 class AudioCaptureError(RuntimeError):
     """Raised when the audio capture stream cannot be started."""
 

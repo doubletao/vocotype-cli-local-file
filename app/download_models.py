@@ -139,7 +139,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-def get_model_cache_path(model_name, revision):
+def get_model_cache_path(model_name, revision=None):
     """
     离线优先获取模型路径
     1. 先检查本地缓存是否存在且完整
@@ -170,23 +170,20 @@ def get_model_cache_path(model_name, revision):
     logger.info(f"本地缓存不存在，开始下载模型: {model_name}")
     from modelscope.hub.snapshot_download import snapshot_download
 
-    # 使用 ignore_file_pattern 和 local_files_only 参数控制行为
+    # 下载参数
+    download_kwargs = {"model_id": model_name}
+    if revision:
+        download_kwargs["revision"] = revision
+
     try:
         # 先尝试纯离线模式（不联网）
-        model_dir = snapshot_download(
-            model_name,
-            revision=revision,
-            local_files_only=True  # 仅使用本地文件，不联网
-        )
+        model_dir = snapshot_download(**download_kwargs, local_files_only=True)
         logger.info(f"使用已下载的模型（离线模式）: {model_dir}")
         return model_dir
     except Exception as offline_error:
         logger.warning(f"离线模式失败: {offline_error}，尝试在线下载")
 
         # 离线失败，进行在线下载
-        model_dir = snapshot_download(
-            model_name,
-            revision=revision,
-        )
+        model_dir = snapshot_download(**download_kwargs)
         logger.info(f"模型下载完成: {model_dir}")
         return model_dir
