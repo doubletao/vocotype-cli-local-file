@@ -1,176 +1,160 @@
-# VocoType - 精准的离线语音输入法
+# VocoType CLI — 离线语音转文字工具
 
-<h2 align="center">您的声音，绝不离开电脑</h2>
+<h2 align="center">本地离线，多语言语音转文字</h2>
 
-**VocoType** 是一款专为注重隐私和效率的专业人士打造的、**完全免费**的桌面端语音输入法。所有识别均在本地完成，无惧断网，不上传任何数据。
+**VocoType CLI** 是一款完全离线的语音转文字命令行工具，支持麦克风录音、系统声音捕获、音频文件转写三种输入方式。所有识别均在本地完成，不上传任何数据。
 
-这个 GitHub 项目是 VocoType 核心引擎的 **CLI (命令行) 开源版本**，主要面向开发者。
-
----
-
-### **➡️ 想获得最佳体验？请立即下载免费桌面版！**
-
-开箱即用，功能更完整，无需任何技术背景。
-
-**[立即访问官网，下载免费、完整的 VocoType 桌面版](https://vocotype.com)**
-
-## 功能简介
-
-VocoType 是一款智能语音输入工具，通过快捷键即可将语音实时转换为文字并自动输入到当前应用。支持MCP语音转文字、 AI 优化文本、自定义替换词典等功能，让语音输入更高效、更准确。
-
-### 📹 演示视频
-
-<video controls width="100%">
-  <source src="https://s1.bib0.com/leilei/i/2025/11/04/5yba.mp4" type="video/mp4">
-  您的浏览器不支持视频播放。
-</video>
-
-
-## 下载
-
-| OS | Download |
-|---|---|
-| **Windows** | [![Setup](https://img.shields.io/badge/Setup-x64-blue)](https://github.com/233stone/vocotype-cli/releases/download/v1.5.5/VocoType_1.5.5_x64-setup.exe)  | 
-| **macOS** | [![DMG](https://img.shields.io/badge/DMG-Apple%20Silicon-black)](https://github.com/233stone/vocotype-cli/releases/download/v1.5.5/VocoType_1.5.5_Universal.dmg) [![DMG](https://img.shields.io/badge/DMG-Intel-black)](https://github.com/233stone/vocotype-cli/releases/download/v1.5.5/VocoType_1.5.5_Universal.dmg)  |
----
-
-
-
-## 🤔 VocoType 为何与众不同？
-
-| 特性           |    ✅ **VocoType**     |  传统云端输入法   |  操作系统自带   |
-| :------------- | :--------------------: | :---------------: | :-------------: |
-| **隐私安全**   | **本地离线，绝不上传** | ❌ 数据需上传云端 | ⚠️ 隐私政策复杂 |
-| **网络依赖**   |    **完全无需联网**    |  ❌ 必须联网使用  |  ❌ 强依赖网络  |
-| **响应速度**   |      **0.1 秒级**      |  慢，受网速影响   | 慢，受网速影响  |
-| **定制化能力** |  **强大的自定义词表**  |      弱或无       |    基本没有     |
-
-## ✅ 核心功能
-
-- **完整的图形用户界面**：开箱即用，所有操作清晰直观。
-- **系统级全局输入**：在任何软件、任何文本框内都能直接语音输入。
-- **自定义词典**：支持添加 20 个常用术语、人名，提升识别准确率。
-- **100% 离线运行**：绝对的隐私和数据安全。
-- **旗舰级识别引擎**：精准识别中英混合内容。
-- **AI 智能优化**：支持选择多种 AI 模型，通过可定制的 Prompt 模板自动修正语音转录中的错别字、同音字和自我修正，智能识别口语中的修正指令（如"不对"、"改成"等），让输出文本更准确流畅。
-
-_(对于有更高需求的专业用户，应用内提供了升级到 Pro 版的选项，以解锁无限词典等高级功能。)_
-
-## 🎯 适用各类专业场景
-
-无论是文字工作者、律师、学者、游戏玩家，还是日常办公，VocoType 都能成为您值得信赖的效率伙伴。
-
-| 用户                | 场景                                                                                           |
-| :------------------ | :--------------------------------------------------------------------------------------------- |
-| **作家与创作者**    | 撰写文章、小说，整理会议纪要，让思绪通过语音即时转化为文字，心无旁骛，专注于创作本身。         |
-| **法律 & 医疗人士** | 处理高度敏感的客户信息或病历时，100%离线确保数据安全。自定义词表更能轻松驾驭行业术语。         |
-| **学生与学者**      | 快速记录课堂笔记、整理访谈录音、撰写学术论文。告别繁琐的打字，将更多精力投入到思考与研究之中。 |
-| **开发者 & 程序员** | 无论是与 AI 结对编程，还是撰写技术文档，都能精准识别 `function`、`Kubernetes pod` 等专业术语。 |
-| **游戏玩家**        | 在激烈的游戏对战中，通过语音快速打字与队友交流，无需停下操作，保持游戏节奏，提升团队协作效率。 |
-
-## ✨ VocoType 核心引擎特性
-
-_所有 VocoType 版本共享同一个强大的核心引擎。_
-
-- **🛡️ 100% 离线，隐私无忧**：所有语音识别在您的电脑本地完成。
-- **⚡️ 旗舰级识别引擎**：中英混合输入同样精准，告别反复修改。
-- **⚙️ 高度可定制**：独创的替换词表功能，让人名、地名、行业术语一次就对。
-- **💻 轻量化设计**：仅需 700MB 内存，纯 CPU 推理，无需昂贵显卡。
-- **🚀 0.1 秒级响应**：感受所言即所得的畅快，让您的灵感不再因等待而中断。
+基于 [FunASR](https://github.com/modelscope/FunASR) 的 SenseVoice 多语言模型，支持中文、英文、日文、粤语、韩语自动检测。
 
 ---
 
-## 🛠️ 【开发者专属】CLI 版安装指南
+## 功能特性
 
-**请注意：** 此版本面向有一定技术背景的开发者。如果您不熟悉命令行，我们强烈建议您访问官网，下载简单易用的 **VocoType 免费桌面版**。
+- **三种音源输入**：麦克风（F2）、系统声音（F3）、音频文件（F4）
+- **多语言识别**：中文 / 英文 / 日文 / 粤语 / 韩语，自动检测语言
+- **边识别边输出**：每 5 秒自动提交转录，实时查看结果
+- **自动保存**：转录结果自动追加写入 `logs/transcription.txt`
+- **100% 离线**：所有识别在本地完成，无需联网，保护隐私
+- **可选云端后端**：支持接入火山引擎 BigASR 流式识别
 
-### 1. 环境依赖
+## 快捷键
 
+| 快捷键 | 功能 |
+|:--|:--|
+| **F2** | 麦克风录音 toggle（开始/停止） |
+| **F3** | 系统声音识别 toggle（WASAPI loopback） |
+| **F4** | 音频文件识别（输入文件路径，支持 wav/mp3/flac/ogg） |
+| **Ctrl+C** | 退出程序 |
+
+## 环境要求
+
+- Windows 10/11
 - Python 3.12
-- 我们强烈建议使用 `uv` 或 `venv` 创建虚拟环境。
+- 麦克风（F2/F3 需要音频输入设备）
 
-### 2. 克隆与安装
+## 安装与运行
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/233stone/vocotype-cli.git
-cd vocotype-cli
+git clone https://github.com/doubletao/vocotype-cli-local-file.git
+cd vocotype-cli-local-file
 
-# 2. (推荐) 创建并激活虚拟环境
+# 2. 创建并激活虚拟环境（推荐）
 pip install uv
 uv venv --python 3.12
-source .venv/bin/activate  # macOS/Linux
-# 或者 .\.venv\Scripts\activate  (Windows)
+.\.venv\Scripts\activate
 
 # 3. 安装依赖
 uv pip install -r requirements.txt
 
 # 4. 运行
 python main.py
-
-# 保存数据集运行
-python main.py --save-dataset
 ```
 
-> **模型下载**：首次运行时，程序会自动下载约 500MB 的模型文件，请确保网络连接稳定。
+> **首次运行**会自动下载 SenseVoice 模型（约 1GB），请确保网络连接稳定。模型缓存在 `~/.cache/modelscope/hub/models/iic/`。
 
-## 🌐 Volcengine 火山引擎 BigASR 流式识别后端（可选）
+## 使用说明
 
-除了默认的本地 FunASR 离线引擎，VocoType CLI 还支持接入[火山引擎豆包大模型流式语音识别](https://www.volcengine.com/docs/6561/1354869)作为云端识别后端。
+### 麦克风识别（F2）
 
-### 优势
+按 F2 开始录音，再次按 F2 停止。录音过程中每 5 秒自动转录一次并输出结果。
 
-| 特性 | 本地 FunASR | Volcengine BigASR |
-|:--|:--:|:--:|
-| 网络要求 | 无 | 需要联网 |
-| 模型下载 | ~500 MB | 无需下载 |
-| 响应延迟 | 本地推理 | 云端极低延迟 |
-| 识别质量 | 高 | 旗舰级大模型 |
-| 数据隐私 | 完全离线 | 音频发送至火山引擎 |
+### 系统声音识别（F3）
 
-### 配置步骤
+按 F3 开始捕获系统声音（扬声器/耳机播放的音频），再次按 F3 停止。适用于会议录音、视频字幕等场景。
 
-1. 登录[火山引擎控制台](https://console.volcengine.com/speech/app)，创建一个语音应用，获取 **App Key** 和 **Access Key**。
+> 需要系统存在 WASAPI loopback 设备。程序启动时会自动检测并打印可用设备列表。
 
-2. 在项目目录创建 `config.json`：
+### 音频文件识别（F4）
 
-```json
-{
-  "backend": "volcengine",
-  "volcengine": {
-    "app_key": "YOUR_APP_KEY",
-    "access_key": "YOUR_ACCESS_KEY",
-    "resource_id": "volc.bigasr.sauc.duration",
-    "enable_punc": true,
-    "enable_itn": true
-  }
-}
-```
+按 F4 后输入音频文件路径，支持 wav、mp3、flac、ogg 等格式。大文件会自动分片转录，边识别边输出。
 
-3. 以 `--config` 参数启动：
+### 输出
+
+- 转录结果实时打印到终端日志
+- 自动追加保存到 `logs/transcription.txt`
+- 可通过 `--save-dataset` 参数保存音频/文本对到 `dataset/` 目录
+
+## 配置
+
+创建 `config.json` 可自定义配置，使用 `--config` 参数加载：
 
 ```bash
 python main.py --config config.json
 ```
 
-> **注意**：使用 Volcengine 后端时，录音数据会发送到火山引擎服务器进行识别，不再完全离线。如对隐私有严格要求，请继续使用默认的本地 FunASR 后端。
+配置示例：
 
-## 常见问题 (FAQ)
+```json
+{
+  "asr": {
+    "engine": "sensevoice",
+    "language": "auto"
+  },
+  "audio": {
+    "segment_seconds": 5,
+    "loopback_device": null
+  },
+  "output": {
+    "log_file": "logs/transcription.txt"
+  }
+}
+```
 
-**Q: 我的数据安全吗？**
+### 引擎切换
 
-> A: **100%安全**。所有语音识别均在本地离线完成，您的音频数据不会上传到任何服务器。
+| 引擎 | 配置值 | 说明 |
+|:--|:--|:--|
+| **SenseVoice**（默认） | `"engine": "sensevoice"` | 多语言：中英日粤韩，自动检测 |
+| **Paraformer** | `"engine": "paraformer"` | 中文专用，精度更高 |
 
-## 📞 联系我们
+### 后端切换
 
-- **Bug 与建议**：请优先使用 GitHub Issues。
-- **关注我们获取最新动态**：[https://vocotype.com](https://vocotype.com)
+| 后端 | 配置值 | 说明 |
+|:--|:--|:--|
+| **FunASR**（默认） | `"backend": "funasr"` | 本地离线推理 |
+| **Volcengine** | `"backend": "volcengine"` | 火山引擎云端识别，需配置 `app_key` 和 `access_key` |
 
-## 🙏 致谢
+## 独立转写 CLI
 
-VocoType 的诞生离不开以下优秀的开源项目：
+可单独使用 `funasr_server.py` 进行音频文件转写测试：
 
-- **[FunASR](https://github.com/modelscope/FunASR)** - 阿里巴巴达摩院开源的语音识别框架，为 VocoType 提供了强大的离线语音识别能力。
-- **[QuQu](https://github.com/yan5xu/ququ)** - 优秀的开源项目，为 VocoType 提供了重要的技术参考和灵感。
+```bash
+python -m app.funasr_server --audio test.wav --pretty
+```
 
-感谢这些开源社区的无私贡献！
+## 常见问题
+
+**Q: F3 系统声音识别不可用？**
+
+A: 程序启动时会打印可用音频设备列表。如果没有检测到 loopback 设备，可能需要在系统音频设置中启用"立体声混音"（Stereo Mix）。
+
+**Q: SenseVoice 模型加载失败？**
+
+A: 确保已安装所有依赖（`pip install -r requirements.txt`）。首次加载会自动导出 ONNX 模型，可能需要较长时间。
+
+**Q: 数据安全吗？**
+
+A: 默认使用本地 FunASR 后端，所有识别在本地完成，音频数据不会上传。仅当使用 Volcengine 后端时，音频会发送至火山引擎服务器。
+
+## 项目结构
+
+```
+├── main.py                  # 程序入口
+├── app/
+│   ├── transcribe.py        # 核心协调器：录音、分段、异步转录
+│   ├── audio_capture.py     # 音频采集与设备枚举
+│   ├── funasr_server.py     # 本地 ASR 后端（SenseVoice / Paraformer）
+│   ├── volcengine_asr.py    # 火山引擎云端 ASR 后端
+│   ├── config.py            # 配置管理
+│   ├── hotkeys.py           # 全局热键注册
+│   └── output.py            # 文本输出
+├── requirements.txt
+└── logs/
+    └── transcription.txt    # 转录结果自动保存
+```
+
+## 致谢
+
+- **[FunASR](https://github.com/modelscope/FunASR)** — 阿里巴巴达摩院开源的语音识别框架
+- **[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)** — 多语言语音理解模型

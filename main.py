@@ -10,7 +10,7 @@ import time
 
 import keyboard
 
-from app import HotkeyManager, TranscriptionResult, TranscriptionWorker, load_config, type_text
+from app import HotkeyManager, TranscriptionResult, TranscriptionWorker, load_config
 from app.audio_capture import find_loopback_device, list_devices
 from app.plugins.dataset_recorder import wrap_result_handler
 from app.logging_config import setup_logging
@@ -50,8 +50,6 @@ def main() -> None:
     )
 
     output_cfg = config.get("output", {})
-    output_method = output_cfg.get("method", "auto")
-    append_newline = output_cfg.get("append_newline", False)
     log_file = output_cfg.get("log_file", "logs/transcription.txt")
     log_file_abs = log_file if os.path.isabs(log_file) else os.path.join(log_dir_abs, os.path.basename(log_file))
 
@@ -60,9 +58,9 @@ def main() -> None:
         config_path=args.config,
         on_result=None,  # 稍后设置
     )
-    
+
     # 创建result handler（需要worker引用）
-    worker.on_result = _make_result_handler(output_method, append_newline, worker, log_file_abs)
+    worker.on_result = _make_result_handler(worker, log_file_abs)
     if args.save_dataset:
         worker.on_result = wrap_result_handler(worker.on_result, worker, args.dataset_dir)
     
@@ -125,7 +123,7 @@ def main() -> None:
         sys.exit(0)
 
 
-def _make_result_handler(output_method: str, append_newline: bool, worker: TranscriptionWorker, log_file: str):
+def _make_result_handler(worker: TranscriptionWorker, log_file: str):
     def _handle_result(result: TranscriptionResult) -> None:
         if result.error:
             logger.error("转写失败: %s", result.error)
@@ -141,11 +139,6 @@ def _make_result_handler(output_method: str, append_newline: bool, worker: Trans
             stats["completed"],
             stats["submitted"],
             stats["pending"],
-        )
-        type_text(
-            result.text,
-            append_newline=append_newline,
-            method=output_method,
         )
 
         # 追加写入 txt 文件
